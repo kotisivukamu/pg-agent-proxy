@@ -11,6 +11,8 @@ primary_region = "arn"
   PGPROXY_LISTEN = "0.0.0.0:6432"
   PGPROXY_ADMIN_LISTEN = "0.0.0.0:6480"
   PGPROXY_DATABASE = "/data/pgproxy.db"
+  # host:port shown in agent connection strings (public address, not internal).
+  PGPROXY_PUBLIC_ADDR = "pg-agent-proxy.fly.dev:5432"
   PGPROXY_APPROVAL_MODE = "dashboard"
   PGPROXY_APPROVAL_TIMEOUT = "5m"
   # ACME (Let's Encrypt) trusted TLS, validated via TLS-ALPN-01 on 443.
