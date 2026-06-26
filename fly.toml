@@ -1,0 +1,48 @@
+# Fly.io deployment for pg-agent-proxy (kamuhub).
+# One autostop machine. Secrets (PGPROXY_ADMIN_TOKEN, PGPROXY_HASH_SALT) come
+# from Fly secrets, synced from Doppler.
+app = "pg-agent-proxy"
+primary_region = "arn"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PGPROXY_LISTEN = "0.0.0.0:6432"
+  PGPROXY_ADMIN_LISTEN = "0.0.0.0:6480"
+  PGPROXY_DATABASE = "/data/pgproxy.db"
+  PGPROXY_APPROVAL_MODE = "dashboard"
+  PGPROXY_APPROVAL_TIMEOUT = "5m"
+  # ACME (Let's Encrypt) trusted TLS, validated via TLS-ALPN-01 on 443.
+  PGPROXY_TLS_MODE = "acme"
+  PGPROXY_TLS_HOSTS = "pg-agent-proxy.fly.dev"
+  PGPROXY_TLS_REQUIRED = "true"
+  PGPROXY_TLS_CACHE_DIR = "/data/certs"
+
+[mounts]
+  source = "pgproxy_data"
+  destination = "/data"
+
+# PostgreSQL proxy port (clients connect here with sslmode=verify-full).
+[[services]]
+  internal_port = 6432
+  protocol = "tcp"
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  [[services.ports]]
+    port = 5432
+
+# Admin UI / API over HTTPS; also answers ACME TLS-ALPN-01 challenges.
+[[services]]
+  internal_port = 6480
+  protocol = "tcp"
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  [[services.ports]]
+    port = 443
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
